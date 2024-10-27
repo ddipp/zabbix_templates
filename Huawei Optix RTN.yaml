@@ -1,0 +1,346 @@
+zabbix_export:
+  version: '7.0'
+  template_groups:
+    - uuid: 7d4b195e632a4c9b8da62a84f58895c0
+      name: RRL
+    - uuid: 36bff6c29af64692839d077febfc7079
+      name: 'Templates/Network devices'
+  templates:
+    - uuid: 8ff8adce426e4b208de8aa6650973db6
+      template: 'Huawei Optix RTN'
+      name: 'Huawei Optix RTN'
+      templates:
+        - name: 'Template Module ICMP Ping'
+      groups:
+        - name: RRL
+        - name: 'Templates/Network devices'
+      items:
+        - uuid: 92f05715ac594604bad2e1344339272e
+          name: 'SNMP walk network interfaces'
+          type: SNMP_AGENT
+          snmp_oid: 'walk[1.3.6.1.4.1.2011.2.25.4.50.52.1.1.1.5,1.3.6.1.4.1.2011.2.25.4.50.52.1.1.1.6,iso.3.6.1.4.1.2011.2.25.4.30.36.1.1.1.2,.1.3.6.1.4.1.2011.2.25.4.50.52.1.1.1.14,1.3.6.1.4.1.2011.2.25.4.50.52.1.1.1.15]'
+          key: walk.if
+          history: '0'
+          value_type: TEXT
+          trends: '0'
+        - uuid: b4401cc09ca74ea78bc71022e36391d5
+          name: 'SNMP walk ODU'
+          type: SNMP_AGENT
+          snmp_oid: 'walk[iso.3.6.1.4.1.2011.2.25.4.40.4.10.40.1.2,iso.3.6.1.4.1.2011.2.25.4.40.4.10.40.1.1,iso.3.6.1.4.1.2011.2.25.4.40.4.10.30.1.8,iso.3.6.1.4.1.2011.2.25.4.40.4.10.30.1.9,iso.3.6.1.4.1.2011.2.25.4.40.4.10.20.1.3,iso.3.6.1.4.1.2011.2.25.4.40.4.10.20.1.4]'
+          key: walk.rf
+          history: '0'
+          value_type: TEXT
+          trends: '0'
+      discovery_rules:
+        - uuid: c474b2ab126d4ed994f2e6375dc3509f
+          name: 'Network interfaces discovery'
+          type: DEPENDENT
+          key: net.if.discovery
+          delay: '0'
+          filter:
+            conditions:
+              - macro: '{#IFOPERSTATUS}'
+                value: '0'
+                operator: NOT_MATCHES_REGEX
+                formulaid: A
+          item_prototypes:
+            - uuid: 005ab43f08c743b49642cf2f9f783fc4
+              name: 'Ethernet interface {#SNMPINDEX} ({#IFNAME}): Bits received'
+              type: DEPENDENT
+              key: 'net.if.rxbytes[{#SNMPINDEX}]'
+              delay: '0'
+              units: bit/s
+              valuemap:
+                name: IFSPEED
+              preprocessing:
+                - type: SNMP_WALK_VALUE
+                  parameters:
+                    - '1.3.6.1.4.1.2011.2.25.4.50.52.1.1.1.14.{#SNMPINDEX}'
+                    - '0'
+                - type: REGEX
+                  parameters:
+                    - '10 : (\d+)'
+                    - \1
+                - type: MULTIPLIER
+                  parameters:
+                    - '1000'
+              master_item:
+                key: walk.if
+              tags:
+                - tag: component
+                  value: network
+                - tag: description
+                  value: '{#IFNAME}'
+                - tag: interface
+                  value: '{#SNMPINDEX}'
+            - uuid: 0f3adb325a8847fd9477813275ef7e26
+              name: 'Ethernet interface {#SNMPINDEX} ({#IFNAME}): Speed'
+              type: DEPENDENT
+              key: 'net.if.speed[{#SNMPINDEX}]'
+              delay: '0'
+              valuemap:
+                name: IFSPEED
+              preprocessing:
+                - type: SNMP_WALK_VALUE
+                  parameters:
+                    - '1.3.6.1.4.1.2011.2.25.4.50.52.1.1.1.6.{#SNMPINDEX}'
+                    - '0'
+              master_item:
+                key: walk.if
+              tags:
+                - tag: component
+                  value: network
+                - tag: description
+                  value: '{#IFNAME}'
+                - tag: interface
+                  value: '{#SNMPINDEX}'
+            - uuid: b65cb9865bfc4604b0880fe32b56359e
+              name: 'Ethernet interface {#SNMPINDEX} ({#IFNAME}): State'
+              type: DEPENDENT
+              key: 'net.if.state[{#SNMPINDEX}]'
+              delay: '0'
+              valuemap:
+                name: IFSTATE
+              preprocessing:
+                - type: SNMP_WALK_VALUE
+                  parameters:
+                    - '1.3.6.1.4.1.2011.2.25.4.50.52.1.1.1.5.{#SNMPINDEX}'
+                    - '0'
+              master_item:
+                key: walk.if
+              tags:
+                - tag: component
+                  value: network
+                - tag: description
+                  value: '{#IFNAME}'
+                - tag: interface
+                  value: '{#SNMPINDEX}'
+            - uuid: eb28a0a045084cf1a6f48118f7a38454
+              name: 'Ethernet interface {#SNMPINDEX} ({#IFNAME}): Bits sent'
+              type: DEPENDENT
+              key: 'net.if.txbytes[{#SNMPINDEX}]'
+              delay: '0'
+              units: bit/s
+              valuemap:
+                name: IFSPEED
+              preprocessing:
+                - type: SNMP_WALK_VALUE
+                  parameters:
+                    - '1.3.6.1.4.1.2011.2.25.4.50.52.1.1.1.15.{#SNMPINDEX}'
+                    - '0'
+                - type: REGEX
+                  parameters:
+                    - '10 : (\d+)'
+                    - \1
+                - type: MULTIPLIER
+                  parameters:
+                    - '1000'
+              master_item:
+                key: walk.if
+              tags:
+                - tag: component
+                  value: network
+                - tag: description
+                  value: '{#IFNAME}'
+                - tag: interface
+                  value: '{#SNMPINDEX}'
+          master_item:
+            key: walk.if
+          preprocessing:
+            - type: SNMP_WALK_TO_JSON
+              parameters:
+                - '{#IFOPERSTATUS}'
+                - 1.3.6.1.4.1.2011.2.25.4.50.52.1.1.1.5
+                - '0'
+                - '{#IFSPEEDSTATUS}'
+                - 1.3.6.1.4.1.2011.2.25.4.50.52.1.1.1.6
+                - '0'
+                - '{#IFNAME}'
+                - 1.3.6.1.4.1.2011.2.25.4.30.36.1.1.1.2
+                - '0'
+        - uuid: 4f4fe38dd2dd4486b38a80465ff1f788
+          name: 'Radio interfaces discovery'
+          type: DEPENDENT
+          key: net.rf.discovery
+          delay: '0'
+          filter:
+            conditions:
+              - macro: '{#IFENABLE}'
+                value: '0'
+                operator: NOT_MATCHES_REGEX
+                formulaid: A
+          item_prototypes:
+            - uuid: 418ef5e04709473c8a360c23f078d71b
+              name: 'ODU interface {#SNMPINDEX}: ConfigState'
+              type: DEPENDENT
+              key: 'net.rf.configstate[{#SNMPINDEX}]'
+              delay: '0'
+              valuemap:
+                name: IFSTATE
+              preprocessing:
+                - type: SNMP_WALK_VALUE
+                  parameters:
+                    - '1.3.6.1.4.1.2011.2.25.4.40.4.10.40.1.1.{#SNMPINDEX}'
+                    - '0'
+              master_item:
+                key: walk.rf
+              tags:
+                - tag: component
+                  value: radio
+                - tag: interface
+                  value: '{#SNMPINDEX}'
+            - uuid: 6819cb6e886c42c5877a402cc91a5c10
+              name: 'ODU interface {#SNMPINDEX}: FreqRX'
+              type: DEPENDENT
+              key: 'net.rf.rxfreq[{#SNMPINDEX}]'
+              delay: '0'
+              units: Hz
+              preprocessing:
+                - type: SNMP_WALK_VALUE
+                  parameters:
+                    - 'iso.3.6.1.4.1.2011.2.25.4.40.4.10.20.1.4.{#SNMPINDEX}'
+                    - '0'
+                - type: MULTIPLIER
+                  parameters:
+                    - '1000'
+              master_item:
+                key: walk.rf
+              tags:
+                - tag: component
+                  value: radio
+                - tag: interface
+                  value: '{#SNMPINDEX}'
+                - tag: radio
+                  value: rx
+            - uuid: 80868424f2bd44d9a4738cd1124720ad
+              name: 'ODU interface {#SNMPINDEX}: RxPower'
+              type: DEPENDENT
+              key: 'net.rf.rxpower[{#SNMPINDEX}]'
+              delay: '0'
+              value_type: FLOAT
+              units: dBm
+              preprocessing:
+                - type: SNMP_WALK_VALUE
+                  parameters:
+                    - 'iso.3.6.1.4.1.2011.2.25.4.40.4.10.30.1.9.{#SNMPINDEX}'
+                    - '0'
+                - type: MULTIPLIER
+                  parameters:
+                    - '0.1'
+              master_item:
+                key: walk.rf
+              tags:
+                - tag: component
+                  value: radio
+                - tag: interface
+                  value: '{#SNMPINDEX}'
+                - tag: radio
+                  value: rx
+            - uuid: 2766768beceb4d51abd98349b882765b
+              name: 'ODU interface {#SNMPINDEX}: State'
+              type: DEPENDENT
+              key: 'net.rf.state[{#SNMPINDEX}]'
+              delay: '0'
+              valuemap:
+                name: IFSTATE
+              preprocessing:
+                - type: SNMP_WALK_VALUE
+                  parameters:
+                    - '1.3.6.1.4.1.2011.2.25.4.40.4.10.40.1.2.{#SNMPINDEX}'
+                    - '0'
+              master_item:
+                key: walk.rf
+              tags:
+                - tag: component
+                  value: radio
+                - tag: interface
+                  value: '{#SNMPINDEX}'
+            - uuid: 2d32967568974b1fa0f6e944524d66f5
+              name: 'ODU interface {#SNMPINDEX}: FreqTX'
+              type: DEPENDENT
+              key: 'net.rf.txfreq[{#SNMPINDEX}]'
+              delay: '0'
+              units: Hz
+              preprocessing:
+                - type: SNMP_WALK_VALUE
+                  parameters:
+                    - 'iso.3.6.1.4.1.2011.2.25.4.40.4.10.20.1.3.{#SNMPINDEX}'
+                    - '0'
+                - type: MULTIPLIER
+                  parameters:
+                    - '1000'
+              master_item:
+                key: walk.rf
+              tags:
+                - tag: component
+                  value: radio
+                - tag: interface
+                  value: '{#SNMPINDEX}'
+                - tag: radio
+                  value: tx
+            - uuid: 473d5fceb494447d95ed9621d1d196d8
+              name: 'ODU interface {#SNMPINDEX}: TxPower'
+              type: DEPENDENT
+              key: 'net.rf.txpower[{#SNMPINDEX}]'
+              delay: '0'
+              value_type: FLOAT
+              units: dBm
+              preprocessing:
+                - type: SNMP_WALK_VALUE
+                  parameters:
+                    - 'iso.3.6.1.4.1.2011.2.25.4.40.4.10.30.1.8.{#SNMPINDEX}'
+                    - '0'
+                - type: MULTIPLIER
+                  parameters:
+                    - '0.1'
+              master_item:
+                key: walk.rf
+              tags:
+                - tag: component
+                  value: radio
+                - tag: interface
+                  value: '{#SNMPINDEX}'
+                - tag: radio
+                  value: tx
+          master_item:
+            key: walk.rf
+          preprocessing:
+            - type: SNMP_WALK_TO_JSON
+              parameters:
+                - '{#IFENABLE}'
+                - 1.3.6.1.4.1.2011.2.25.4.40.4.10.40.1.1
+                - '0'
+      macros:
+        - macro: '{$ICMP_RESPONSE_TIME_WARN}'
+          value: '0.5'
+        - macro: '{$RSL_CRIT}'
+          value: '-70'
+        - macro: '{$RSL_WARN}'
+          value: '-60'
+      valuemaps:
+        - uuid: e2db255707c6434c9ad3755085937b09
+          name: IFSPEED
+          mappings:
+            - value: '0'
+              newvalue: auto
+            - value: '1'
+              newvalue: 10Mhalf
+            - value: '2'
+              newvalue: 10Mfull
+            - value: '3'
+              newvalue: 100Mhalf
+            - value: '4'
+              newvalue: 100Mfull
+            - value: '5'
+              newvalue: 1Ghalf
+            - value: '6'
+              newvalue: 1Gfull
+            - value: '255'
+              newvalue: negotiating
+        - uuid: dd0d6f27f99e473d859a5864d7970cf1
+          name: IFSTATE
+          mappings:
+            - value: '0'
+              newvalue: Down
+            - value: '1'
+              newvalue: Up
