@@ -19,6 +19,14 @@ zabbix_export:
           name: 'SNMP walk network interfaces'
           type: SNMP_AGENT
           snmp_oid: 'walk[1.3.6.1.4.1.2011.2.25.4.50.52.1.1.1.5,1.3.6.1.4.1.2011.2.25.4.50.52.1.1.1.6,iso.3.6.1.4.1.2011.2.25.4.30.36.1.1.1.2,.1.3.6.1.4.1.2011.2.25.4.50.52.1.1.1.14,1.3.6.1.4.1.2011.2.25.4.50.52.1.1.1.15]'
+          key: walk.eth
+          history: '0'
+          value_type: TEXT
+          trends: '0'
+        - uuid: 2d88407f901d41a9b5ce6bf9d3696491
+          name: 'SNMP walk IF'
+          type: SNMP_AGENT
+          snmp_oid: 'walk[iso.3.6.1.4.1.2011.2.25.4.40.3.10.40.1.2,iso.3.6.1.4.1.2011.2.25.4.40.3.10.40.1.3,iso.3.6.1.4.1.2011.2.25.4.40.3.10.40.1.4]'
           key: walk.if
           history: '0'
           value_type: TEXT
@@ -35,7 +43,7 @@ zabbix_export:
         - uuid: c474b2ab126d4ed994f2e6375dc3509f
           name: 'Network interfaces discovery'
           type: DEPENDENT
-          key: net.if.discovery
+          key: net.eth.discovery
           delay: '0'
           filter:
             conditions:
@@ -65,7 +73,7 @@ zabbix_export:
                   parameters:
                     - '1000'
               master_item:
-                key: walk.if
+                key: walk.eth
               tags:
                 - tag: component
                   value: network
@@ -86,7 +94,7 @@ zabbix_export:
                     - '1.3.6.1.4.1.2011.2.25.4.50.52.1.1.1.6.{#SNMPINDEX}'
                     - '0'
               master_item:
-                key: walk.if
+                key: walk.eth
               tags:
                 - tag: component
                   value: network
@@ -107,7 +115,7 @@ zabbix_export:
                     - '1.3.6.1.4.1.2011.2.25.4.50.52.1.1.1.5.{#SNMPINDEX}'
                     - '0'
               master_item:
-                key: walk.if
+                key: walk.eth
               tags:
                 - tag: component
                   value: network
@@ -136,7 +144,7 @@ zabbix_export:
                   parameters:
                     - '1000'
               master_item:
-                key: walk.if
+                key: walk.eth
               tags:
                 - tag: component
                   value: network
@@ -145,7 +153,7 @@ zabbix_export:
                 - tag: interface
                   value: '{#SNMPINDEX}'
           master_item:
-            key: walk.if
+            key: walk.eth
           preprocessing:
             - type: SNMP_WALK_TO_JSON
               parameters:
@@ -158,8 +166,79 @@ zabbix_export:
                 - '{#IFNAME}'
                 - 1.3.6.1.4.1.2011.2.25.4.30.36.1.1.1.2
                 - '0'
+        - uuid: 3a414e7483524400b75481a0a8eebcb2
+          name: 'Radio IF interfaces discovery'
+          type: DEPENDENT
+          key: net.if.discovery
+          delay: '0'
+          item_prototypes:
+            - uuid: fd5b44d55d3842249e2bb2c4262b63c8
+              name: 'IF interface {#SNMPINDEX}: AM Status'
+              type: DEPENDENT
+              key: 'net.if.amstate[{#SNMPINDEX}]'
+              delay: '0'
+              valuemap:
+                name: IFSTATE
+              preprocessing:
+                - type: SNMP_WALK_VALUE
+                  parameters:
+                    - 'iso.3.6.1.4.1.2011.2.25.4.40.3.10.40.1.2.{#SNMPINDEX}'
+                    - '0'
+              master_item:
+                key: walk.if
+              tags:
+                - tag: component
+                  value: radio
+                - tag: interface
+                  value: '{#SNMPINDEX}'
+            - uuid: 779d4c4d256f447b8414ba9eb53b1298
+              name: 'IF interface {#SNMPINDEX}: Lowest modulation'
+              type: DEPENDENT
+              key: 'net.if.lowModulation[{#SNMPINDEX}]'
+              delay: '0'
+              valuemap:
+                name: Modulation
+              preprocessing:
+                - type: SNMP_WALK_VALUE
+                  parameters:
+                    - 'iso.3.6.1.4.1.2011.2.25.4.40.3.10.40.1.3.{#SNMPINDEX}'
+                    - '0'
+              master_item:
+                key: walk.if
+              tags:
+                - tag: component
+                  value: radio
+                - tag: interface
+                  value: '{#SNMPINDEX}'
+            - uuid: 8142beef617f4dd58c2fb1d62908d8e4
+              name: 'IF interface {#SNMPINDEX}: Top modulation'
+              type: DEPENDENT
+              key: 'net.if.topModulation[{#SNMPINDEX}]'
+              delay: '0'
+              valuemap:
+                name: Modulation
+              preprocessing:
+                - type: SNMP_WALK_VALUE
+                  parameters:
+                    - 'iso.3.6.1.4.1.2011.2.25.4.40.3.10.40.1.4.{#SNMPINDEX}'
+                    - '0'
+              master_item:
+                key: walk.if
+              tags:
+                - tag: component
+                  value: radio
+                - tag: interface
+                  value: '{#SNMPINDEX}'
+          master_item:
+            key: walk.if
+          preprocessing:
+            - type: SNMP_WALK_TO_JSON
+              parameters:
+                - '{#AMENABLE}'
+                - iso.3.6.1.4.1.2011.2.25.4.40.3.10.40.1.2
+                - '0'
         - uuid: 4f4fe38dd2dd4486b38a80465ff1f788
-          name: 'Radio interfaces discovery'
+          name: 'Radio ODU interfaces discovery'
           type: DEPENDENT
           key: net.rf.discovery
           delay: '0'
@@ -344,3 +423,42 @@ zabbix_export:
               newvalue: Down
             - value: '1'
               newvalue: Up
+        - uuid: f06bd663081642e8987e2f7f9cf43c1c
+          name: Modulation
+          mappings:
+            - value: '1'
+              newvalue: QPSK
+            - value: '2'
+              newvalue: 16QAM
+            - value: '3'
+              newvalue: 32QAM
+            - value: '4'
+              newvalue: 64QAM
+            - value: '5'
+              newvalue: 128QAM
+            - value: '6'
+              newvalue: 256QAM
+            - value: '7'
+              newvalue: 512QAM
+            - value: '8'
+              newvalue: 1024QAM
+            - value: '9'
+              newvalue: QPSKSTRONG
+            - value: '10'
+              newvalue: 16QAMSTRONG
+            - value: '11'
+              newvalue: 512QAMLIGHT
+            - value: '12'
+              newvalue: 1024QAMLIGHT
+            - value: '13'
+              newvalue: 2048QAM
+            - value: '14'
+              newvalue: QPSKStrong250M
+            - value: '15'
+              newvalue: QPSKStrong500M
+            - value: '16'
+              newvalue: QPSKStrong750M
+            - value: '17'
+              newvalue: QPSKStrong62P5M
+            - value: '18'
+              newvalue: QPSKStrong125M
