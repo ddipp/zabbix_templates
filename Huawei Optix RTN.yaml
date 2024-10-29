@@ -20,14 +20,16 @@ zabbix_export:
           type: SNMP_AGENT
           snmp_oid: 'walk[1.3.6.1.4.1.2011.2.25.4.50.52.1.1.1.5,1.3.6.1.4.1.2011.2.25.4.50.52.1.1.1.6,iso.3.6.1.4.1.2011.2.25.4.30.36.1.1.1.2,.1.3.6.1.4.1.2011.2.25.4.50.52.1.1.1.14,1.3.6.1.4.1.2011.2.25.4.50.52.1.1.1.15]'
           key: walk.eth
+          delay: 5m
           history: '0'
           value_type: TEXT
           trends: '0'
         - uuid: 2d88407f901d41a9b5ce6bf9d3696491
           name: 'SNMP walk IF'
           type: SNMP_AGENT
-          snmp_oid: 'walk[iso.3.6.1.4.1.2011.2.25.4.40.3.10.40.1.2,iso.3.6.1.4.1.2011.2.25.4.40.3.10.40.1.3,iso.3.6.1.4.1.2011.2.25.4.40.3.10.40.1.4]'
+          snmp_oid: 'walk[iso.3.6.1.4.1.2011.2.25.4.40.3.10.40.1.2,iso.3.6.1.4.1.2011.2.25.4.40.3.10.40.1.3,iso.3.6.1.4.1.2011.2.25.4.40.3.10.40.1.4,iso.3.6.1.4.1.2011.2.25.4.40.3.10.40.1.5,iso.3.6.1.4.1.2011.2.25.4.40.3.10.50.1.1,iso.3.6.1.4.1.2011.2.25.4.40.3.10.50.1.2,iso.3.6.1.4.1.2011.2.25.4.40.3.10.50.1.3,iso.3.6.1.4.1.2011.2.25.4.40.3.10.50.1.4,iso.3.6.1.4.1.2011.2.25.4.40.3.10.50.1.5,iso.3.6.1.4.1.2011.2.25.4.40.3.10.50.1.6]'
           key: walk.if
+          delay: 5m
           history: '0'
           value_type: TEXT
           trends: '0'
@@ -36,6 +38,7 @@ zabbix_export:
           type: SNMP_AGENT
           snmp_oid: 'walk[iso.3.6.1.4.1.2011.2.25.4.40.4.10.40.1.2,iso.3.6.1.4.1.2011.2.25.4.40.4.10.40.1.1,iso.3.6.1.4.1.2011.2.25.4.40.4.10.30.1.8,iso.3.6.1.4.1.2011.2.25.4.40.4.10.30.1.9,iso.3.6.1.4.1.2011.2.25.4.40.4.10.20.1.3,iso.3.6.1.4.1.2011.2.25.4.40.4.10.20.1.4]'
           key: walk.rf
+          delay: 5m
           history: '0'
           value_type: TEXT
           trends: '0'
@@ -57,7 +60,7 @@ zabbix_export:
               type: DEPENDENT
               key: 'net.if.rxbytes[{#SNMPINDEX}]'
               delay: '0'
-              units: bit/s
+              units: bps
               valuemap:
                 name: IFSPEED
               preprocessing:
@@ -128,7 +131,7 @@ zabbix_export:
               type: DEPENDENT
               key: 'net.if.txbytes[{#SNMPINDEX}]'
               delay: '0'
-              units: bit/s
+              units: bps
               valuemap:
                 name: IFSPEED
               preprocessing:
@@ -173,7 +176,7 @@ zabbix_export:
           delay: '0'
           item_prototypes:
             - uuid: fd5b44d55d3842249e2bb2c4262b63c8
-              name: 'IF interface {#SNMPINDEX}: AM Status'
+              name: 'IF interface {#SNMPINDEX}: Modulation AM Status'
               type: DEPENDENT
               key: 'net.if.amstate[{#SNMPINDEX}]'
               delay: '0'
@@ -188,11 +191,53 @@ zabbix_export:
                 key: walk.if
               tags:
                 - tag: component
-                  value: radio
+                  value: IF
                 - tag: interface
                   value: '{#SNMPINDEX}'
+            - uuid: b0f2fcba8042480da7934b068b31eeaa
+              name: 'IF interface {#SNMPINDEX}: Modulation Current Rx'
+              type: DEPENDENT
+              key: 'net.if.curRxModulation[{#SNMPINDEX}]'
+              delay: '0'
+              valuemap:
+                name: Modulation
+              preprocessing:
+                - type: SNMP_WALK_VALUE
+                  parameters:
+                    - 'iso.3.6.1.4.1.2011.2.25.4.40.3.10.50.1.2.{#SNMPINDEX}'
+                    - '0'
+              master_item:
+                key: walk.if
+              tags:
+                - tag: component
+                  value: IF
+                - tag: interface
+                  value: '{#SNMPINDEX}'
+                - tag: radio
+                  value: rx
+            - uuid: 16cdb397ae4c4536a08c54023564c0a9
+              name: 'IF interface {#SNMPINDEX}: Modulation Current Tx'
+              type: DEPENDENT
+              key: 'net.if.curTxModulation[{#SNMPINDEX}]'
+              delay: '0'
+              valuemap:
+                name: Modulation
+              preprocessing:
+                - type: SNMP_WALK_VALUE
+                  parameters:
+                    - 'iso.3.6.1.4.1.2011.2.25.4.40.3.10.50.1.1.{#SNMPINDEX}'
+                    - '0'
+              master_item:
+                key: walk.if
+              tags:
+                - tag: component
+                  value: IF
+                - tag: interface
+                  value: '{#SNMPINDEX}'
+                - tag: radio
+                  value: tx
             - uuid: 779d4c4d256f447b8414ba9eb53b1298
-              name: 'IF interface {#SNMPINDEX}: Lowest modulation'
+              name: 'IF interface {#SNMPINDEX}: Modulation Lowest'
               type: DEPENDENT
               key: 'net.if.lowModulation[{#SNMPINDEX}]'
               delay: '0'
@@ -207,11 +252,115 @@ zabbix_export:
                 key: walk.if
               tags:
                 - tag: component
-                  value: radio
+                  value: IF
+                - tag: interface
+                  value: '{#SNMPINDEX}'
+            - uuid: e64224e8a95d4ac49cf35e28dfa4f3df
+              name: 'IF interface {#SNMPINDEX}: Modulation manual mode'
+              type: DEPENDENT
+              key: 'net.if.manualModulation[{#SNMPINDEX}]'
+              delay: '0'
+              value_type: FLOAT
+              valuemap:
+                name: Modulation
+              preprocessing:
+                - type: SNMP_WALK_VALUE
+                  parameters:
+                    - 'iso.3.6.1.4.1.2011.2.25.4.40.3.10.40.1.5.{#SNMPINDEX}'
+                    - '0'
+              master_item:
+                key: walk.if
+              tags:
+                - tag: component
+                  value: IF
+                - tag: interface
+                  value: '{#SNMPINDEX}'
+            - uuid: fbe90f2e763a42a8ade4ce07d248fa6a
+              name: 'IF interface {#SNMPINDEX}: Rate current rx'
+              type: DEPENDENT
+              key: 'net.if.ratecurrx[{#SNMPINDEX}]'
+              delay: '0'
+              units: bit/s
+              preprocessing:
+                - type: SNMP_WALK_VALUE
+                  parameters:
+                    - 'iso.3.6.1.4.1.2011.2.25.4.40.3.10.50.1.6.{#SNMPINDEX}'
+                    - '0'
+                - type: MULTIPLIER
+                  parameters:
+                    - '1000000'
+              master_item:
+                key: walk.if
+              tags:
+                - tag: component
+                  value: IF
+                - tag: interface
+                  value: '{#SNMPINDEX}'
+            - uuid: 4fd7ed21a04e465ebc6983f99d0949b9
+              name: 'IF interface {#SNMPINDEX}: Rate current tx'
+              type: DEPENDENT
+              key: 'net.if.ratecurtx[{#SNMPINDEX}]'
+              delay: '0'
+              units: bit/s
+              preprocessing:
+                - type: SNMP_WALK_VALUE
+                  parameters:
+                    - 'iso.3.6.1.4.1.2011.2.25.4.40.3.10.50.1.5.{#SNMPINDEX}'
+                    - '0'
+                - type: MULTIPLIER
+                  parameters:
+                    - '1000000'
+              master_item:
+                key: walk.if
+              tags:
+                - tag: component
+                  value: IF
+                - tag: interface
+                  value: '{#SNMPINDEX}'
+            - uuid: 4e044a4579a74181a6131952e738e72b
+              name: 'IF interface {#SNMPINDEX}: Rate max'
+              type: DEPENDENT
+              key: 'net.if.ratemax[{#SNMPINDEX}]'
+              delay: '0'
+              units: bit/s
+              preprocessing:
+                - type: SNMP_WALK_VALUE
+                  parameters:
+                    - 'iso.3.6.1.4.1.2011.2.25.4.40.3.10.50.1.4.{#SNMPINDEX}'
+                    - '0'
+                - type: MULTIPLIER
+                  parameters:
+                    - '1000000'
+              master_item:
+                key: walk.if
+              tags:
+                - tag: component
+                  value: IF
+                - tag: interface
+                  value: '{#SNMPINDEX}'
+            - uuid: ef35fa83cb34480882e1df00048d5e04
+              name: 'IF interface {#SNMPINDEX}: Rate min'
+              type: DEPENDENT
+              key: 'net.if.ratemin[{#SNMPINDEX}]'
+              delay: '0'
+              units: bit/s
+              preprocessing:
+                - type: SNMP_WALK_VALUE
+                  parameters:
+                    - 'iso.3.6.1.4.1.2011.2.25.4.40.3.10.50.1.3.{#SNMPINDEX}'
+                    - '0'
+                - type: MULTIPLIER
+                  parameters:
+                    - '1000000'
+              master_item:
+                key: walk.if
+              tags:
+                - tag: component
+                  value: IF
                 - tag: interface
                   value: '{#SNMPINDEX}'
             - uuid: 8142beef617f4dd58c2fb1d62908d8e4
-              name: 'IF interface {#SNMPINDEX}: Top modulation'
+              name: 'IF interface {#SNMPINDEX}: Modulation Top'
               type: DEPENDENT
               key: 'net.if.topModulation[{#SNMPINDEX}]'
               delay: '0'
@@ -226,7 +375,7 @@ zabbix_export:
                 key: walk.if
               tags:
                 - tag: component
-                  value: radio
+                  value: IF
                 - tag: interface
                   value: '{#SNMPINDEX}'
           master_item:
@@ -265,7 +414,7 @@ zabbix_export:
                 key: walk.rf
               tags:
                 - tag: component
-                  value: radio
+                  value: ODU
                 - tag: interface
                   value: '{#SNMPINDEX}'
             - uuid: 6819cb6e886c42c5877a402cc91a5c10
@@ -286,7 +435,7 @@ zabbix_export:
                 key: walk.rf
               tags:
                 - tag: component
-                  value: radio
+                  value: ODU
                 - tag: interface
                   value: '{#SNMPINDEX}'
                 - tag: radio
@@ -310,7 +459,7 @@ zabbix_export:
                 key: walk.rf
               tags:
                 - tag: component
-                  value: radio
+                  value: ODU
                 - tag: interface
                   value: '{#SNMPINDEX}'
                 - tag: radio
@@ -331,7 +480,7 @@ zabbix_export:
                 key: walk.rf
               tags:
                 - tag: component
-                  value: radio
+                  value: ODU
                 - tag: interface
                   value: '{#SNMPINDEX}'
             - uuid: 2d32967568974b1fa0f6e944524d66f5
@@ -352,7 +501,7 @@ zabbix_export:
                 key: walk.rf
               tags:
                 - tag: component
-                  value: radio
+                  value: ODU
                 - tag: interface
                   value: '{#SNMPINDEX}'
                 - tag: radio
@@ -376,7 +525,7 @@ zabbix_export:
                 key: walk.rf
               tags:
                 - tag: component
-                  value: radio
+                  value: ODU
                 - tag: interface
                   value: '{#SNMPINDEX}'
                 - tag: radio
@@ -462,3 +611,5 @@ zabbix_export:
               newvalue: QPSKStrong62P5M
             - value: '18'
               newvalue: QPSKStrong125M
+            - value: '-1'
+              newvalue: None
