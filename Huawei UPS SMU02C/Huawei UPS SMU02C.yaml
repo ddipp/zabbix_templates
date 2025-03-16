@@ -1,0 +1,803 @@
+zabbix_export:
+  version: '7.0'
+  template_groups:
+    - uuid: d435d7f64b55425ea7f91ed683c2f87d
+      name: Huawei
+    - uuid: 0e60ac85bc3941e2a1d66a048ff164da
+      name: UPS
+  templates:
+    - uuid: f95cc76825ed406b9d9e465b0df1b853
+      template: 'Huawei UPS SMU02C'
+      name: 'Huawei UPS SMU02C'
+      groups:
+        - name: Huawei
+        - name: UPS
+      items:
+        - uuid: f65644eef8ab4cbebe7ab337ce0a75eb
+          name: 'SNMP walk AC distribution'
+          type: SNMP_AGENT
+          snmp_oid: 'walk[1.3.6.1.4.1.2011.6.164.1.5.2.1.1.1,1.3.6.1.4.1.2011.6.164.1.5.2.1.1.4,1.3.6.1.4.1.2011.6.164.1.5.2.1.1.5,1.3.6.1.4.1.2011.6.164.1.5.2.1.1.6,1.3.6.1.4.1.2011.6.164.1.5.2.1.1.7,1.3.6.1.4.1.2011.6.164.1.5.2.1.1.8,1.3.6.1.4.1.2011.6.164.1.5.2.1.1.9,1.3.6.1.4.1.2011.6.164.1.5.2.1.1.99]'
+          key: energy.AC.walk
+          history: '0'
+          value_type: TEXT
+          trends: '0'
+          description: 'Discovering AC'
+          tags:
+            - tag: component
+              value: environment
+        - uuid: 0fbcd6af6aab48e2ba9ea964340b8ba8
+          name: 'DC Battery Current'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.2011.6.164.1.4.2.1.0
+          key: energy.dc.battery.current
+          value_type: FLOAT
+          units: A
+          preprocessing:
+            - type: MULTIPLIER
+              parameters:
+                - '0.1'
+          tags:
+            - tag: component
+              value: energy
+        - uuid: 837b764507fb4f0e82a53adcdf317504
+          name: 'DC Battery Discharge Time'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.2011.6.164.1.4.2.2.0
+          key: energy.dc.battery.dischargeTime
+          value_type: FLOAT
+          units: H
+          preprocessing:
+            - type: MULTIPLIER
+              parameters:
+                - '0.016666667'
+          tags:
+            - tag: component
+              value: energy
+        - uuid: 345a0c641c7445f899b0237f7308810c
+          name: 'DC Battery Remain Capacity'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.2011.6.164.1.4.2.9.0
+          key: energy.dc.battery.remCapacity
+          units: Ah
+          tags:
+            - tag: component
+              value: energy
+        - uuid: cebc3ac5068c40bcb55539ea35b02694
+          name: 'DC Battery Remain Percent'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.2011.6.164.1.4.2.10.0
+          key: energy.dc.battery.remPercent
+          units: '%'
+          preprocessing:
+            - type: STR_REPLACE
+              parameters:
+                - '2147483647'
+                - '0'
+          tags:
+            - tag: component
+              value: energy
+          triggers:
+            - uuid: 231d301012a545da8d7ebde80e2a16e6
+              expression: 'last(/Huawei UPS SMU02C/energy.dc.battery.remPercent,#1)<30'
+              name: 'Battery charge less than 30%'
+              opdata: 'Capacity: {ITEM.LASTVALUE1}'
+              priority: WARNING
+        - uuid: 5c66638b3e4841c2a4591c3bb02650d2
+          name: 'DC Battery Status'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.2011.6.164.1.4.2.3.0
+          key: energy.dc.battery.status
+          value_type: FLOAT
+          valuemap:
+            name: 'Charge status'
+          tags:
+            - tag: component
+              value: energy
+        - uuid: 0e76f30ec22f45a7ab09043a59967144
+          name: 'DC Battery Temperature'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.2011.6.164.1.4.2.5.0
+          key: energy.dc.battery.temp
+          delay: 5m
+          value_type: FLOAT
+          units: °C
+          tags:
+            - tag: component
+              value: energy
+            - tag: component
+              value: environment
+        - uuid: 6ec744c11f724fb6b7d563083ebf5be6
+          name: 'SNMP walk Battery'
+          type: SNMP_AGENT
+          snmp_oid: 'walk[1.3.6.1.4.1.2011.6.164.1.4.4.2.1.1,1.3.6.1.4.1.2011.6.164.1.4.4.1.1.3,1.3.6.1.4.1.2011.6.164.1.4.4.2.1.2,1.3.6.1.4.1.2011.6.164.1.4.4.2.1.7,1.3.6.1.4.1.2011.6.164.1.4.4.2.1.99]'
+          key: energy.DC.battery.walk
+          history: '0'
+          value_type: TEXT
+          trends: '0'
+          description: 'Discovering battery''s'
+          tags:
+            - tag: component
+              value: energy
+        - uuid: 783c09c3758d446bac52f781f81843a0
+          name: 'DC Rectifier Total Current'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.2011.6.164.1.3.1.3.0
+          key: energy.dc.rect.total.current
+          value_type: FLOAT
+          units: A
+          preprocessing:
+            - type: MULTIPLIER
+              parameters:
+                - '0.1'
+          tags:
+            - tag: component
+              value: energy
+        - uuid: aca779cccd1148c5a9732518349a875d
+          name: 'DC Rectifier Total Power'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.2011.6.164.1.3.1.9.0
+          key: energy.dc.rect.total.power
+          value_type: FLOAT
+          units: W
+          tags:
+            - tag: component
+              value: energy
+        - uuid: e0af0ac538c042698340892866bcb3cd
+          name: 'SNMP walk Rectifier distribution'
+          type: SNMP_AGENT
+          snmp_oid: 'walk[1.3.6.1.4.1.2011.6.164.1.3.2.1.1.1,1.3.6.1.4.1.2011.6.164.1.3.2.2.1.2,1.3.6.1.4.1.2011.6.164.1.3.2.2.1.5,1.3.6.1.4.1.2011.6.164.1.3.2.2.1.8]'
+          key: energy.DC.rect.walk
+          history: '0'
+          value_type: TEXT
+          trends: '0'
+          description: 'Discovering Rectifiers'
+          tags:
+            - tag: component
+              value: energy
+        - uuid: ece94f0d8144463cb19a87ad78a67212
+          name: 'DC Load Current'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.2011.6.164.1.6.1.4.0
+          key: energy.dc.total.current
+          value_type: FLOAT
+          units: A
+          preprocessing:
+            - type: MULTIPLIER
+              parameters:
+                - '0.1'
+          tags:
+            - tag: component
+              value: energy
+        - uuid: 2817611f88ac43b487552b37095a123f
+          name: 'DC Load Power'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.2011.6.164.1.6.1.5.0
+          key: energy.dc.total.power
+          units: W
+          tags:
+            - tag: component
+              value: energy
+        - uuid: 6f604cf418ff47e3b7029c65c5eeeaab
+          name: 'DC Load Voltage'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.2011.6.164.1.6.1.3.0
+          key: energy.dc.total.voltage
+          value_type: FLOAT
+          units: V
+          preprocessing:
+            - type: MULTIPLIER
+              parameters:
+                - '0.1'
+          tags:
+            - tag: component
+              value: DC
+            - tag: component
+              value: energy
+        - uuid: 1c65b077e9e14a4490ffa7bb2ffc29bd
+          name: 'SNMP walk humidity sensors'
+          type: SNMP_AGENT
+          snmp_oid: 'walk[1.3.6.1.4.1.2011.6.164.1.8.2.2.1.1,1.3.6.1.4.1.2011.6.164.1.8.2.2.1.3,1.3.6.1.4.1.2011.6.164.1.8.2.2.1.4]'
+          key: env.humi.walk
+          delay: 5m
+          history: '0'
+          value_type: TEXT
+          trends: '0'
+          description: 'Discovering humidity sensors'
+          tags:
+            - tag: component
+              value: environment
+        - uuid: 15af016e10874c23814a8db38e0c8130
+          name: 'SNMP walk temperature sensors'
+          type: SNMP_AGENT
+          snmp_oid: 'walk[1.3.6.1.4.1.2011.6.164.1.8.2.1.1.1,1.3.6.1.4.1.2011.6.164.1.8.2.1.1.3,1.3.6.1.4.1.2011.6.164.1.8.2.1.1.4]'
+          key: env.temp.walk
+          delay: 5m
+          history: '0'
+          value_type: TEXT
+          trends: '0'
+          description: 'Discovering temperature sensors'
+          tags:
+            - tag: component
+              value: environment
+        - uuid: 4e5470f6d1534f9bb963e7f4e46c3389
+          name: 'ICMP ping'
+          type: SIMPLE
+          key: icmpping
+          tags:
+            - tag: component
+              value: health
+            - tag: component
+              value: network
+          triggers:
+            - uuid: 163a7ea5106b47748431ef363e8d9907
+              expression: 'max(/Huawei UPS SMU02C/icmpping,#3)=0'
+              name: 'Unavailable by ICMP ping'
+              priority: HIGH
+              description: 'Last three attempts returned timeout.  Please check device connectivity.'
+              tags:
+                - tag: scope
+                  value: availability
+        - uuid: f416d081cce8497caa39ce62bd13ef52
+          name: 'ICMP loss'
+          type: SIMPLE
+          key: icmppingloss
+          value_type: FLOAT
+          units: '%'
+          tags:
+            - tag: component
+              value: health
+            - tag: component
+              value: network
+          triggers:
+            - uuid: 614435b4113e4183bc64771ac2a66a89
+              expression: 'min(/Huawei UPS SMU02C/icmppingloss,5m)>{$ICMP_LOSS_WARN} and min(/Huawei UPS SMU02C/icmppingloss,5m)<100'
+              name: 'High ICMP ping loss'
+              opdata: 'Loss: {ITEM.LASTVALUE1}'
+              priority: WARNING
+              dependencies:
+                - name: 'Unavailable by ICMP ping'
+                  expression: 'max(/Huawei UPS SMU02C/icmpping,#3)=0'
+              tags:
+                - tag: scope
+                  value: availability
+                - tag: scope
+                  value: performance
+        - uuid: fc81c4b904f24e56a0d9fe30dd0e0491
+          name: 'ICMP response time'
+          type: SIMPLE
+          key: icmppingsec
+          value_type: FLOAT
+          units: s
+          tags:
+            - tag: component
+              value: health
+            - tag: component
+              value: network
+          triggers:
+            - uuid: 5b055633af6c43f38c559f6082b4cf05
+              expression: 'avg(/Huawei UPS SMU02C/icmppingsec,5m)>{$ICMP_RESPONSE_TIME_WARN}'
+              name: 'High ICMP ping response time'
+              opdata: 'Value: {ITEM.LASTVALUE1}'
+              priority: WARNING
+              description: 'Average ICMP response time is too high.'
+              dependencies:
+                - name: 'High ICMP ping loss'
+                  expression: 'min(/Huawei UPS SMU02C/icmppingloss,5m)>{$ICMP_LOSS_WARN} and min(/Huawei UPS SMU02C/icmppingloss,5m)<100'
+                - name: 'Unavailable by ICMP ping'
+                  expression: 'max(/Huawei UPS SMU02C/icmpping,#3)=0'
+              tags:
+                - tag: scope
+                  value: availability
+                - tag: scope
+                  value: performance
+        - uuid: 446217ea5aaa4a6ca179d2835bed6566
+          name: 'System name'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.2011.6.164.1.1.1.1.0
+          key: system.name
+          delay: 1d
+          value_type: CHAR
+          trends: '0'
+          inventory_link: NAME
+          preprocessing:
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 12h
+          tags:
+            - tag: component
+              value: system
+          triggers:
+            - uuid: 70c1949d0991406e8841ea073786c225
+              expression: 'last(/Huawei UPS SMU02C/system.name,#1)<>last(/Huawei UPS SMU02C/system.name,#2) and length(last(/Huawei UPS SMU02C/system.name))>0'
+              name: 'System name has changed'
+              event_name: 'System name has changed (new name: {ITEM.VALUE})'
+              priority: INFO
+              description: 'The name of the system has changed. Acknowledge to close the problem manually.'
+              manual_close: 'YES'
+              tags:
+                - tag: scope
+                  value: notice
+                - tag: scope
+                  value: security
+        - uuid: f86a53bfd4bf49a49e1337522e3af67c
+          name: 'Uptime (network)'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.2.1.1.3.0
+          key: 'system.net.uptime[sysUpTime.0]'
+          delay: 30m
+          trends: '0'
+          units: uptime
+          description: |
+            MIB: SNMPv2-MIB
+            Time (in hundredths of a second) since the network management portion of the system was last re-initialized.
+          preprocessing:
+            - type: MULTIPLIER
+              parameters:
+                - '0.01'
+          tags:
+            - tag: component
+              value: system
+        - uuid: a20d5a2c73d24f3292d348620c903758
+          name: 'SNMP agent availability'
+          type: INTERNAL
+          key: 'zabbix[host,snmp,available]'
+          delay: 5m
+          description: |
+            Availability of SNMP checks on the host. The value of this item corresponds to availability icons in the host list.
+            Possible values:
+            0 - not available
+            1 - available
+            2 - unknown
+          tags:
+            - tag: component
+              value: health
+            - tag: component
+              value: network
+          triggers:
+            - uuid: 7ba96868e461435e9524cbdc70acc25d
+              expression: 'max(/Huawei UPS SMU02C/zabbix[host,snmp,available],{$SNMP.TIMEOUT})=0'
+              name: 'No SNMP data collection'
+              opdata: 'Current state: {ITEM.LASTVALUE1}'
+              priority: WARNING
+              description: 'SNMP is not available for polling. Please check device connectivity and SNMP settings.'
+              dependencies:
+                - name: 'Unavailable by ICMP ping'
+                  expression: 'max(/Huawei UPS SMU02C/icmpping,#3)=0'
+              tags:
+                - tag: scope
+                  value: availability
+      discovery_rules:
+        - uuid: a9dd5f486fdb472b9d114964ace12a4d
+          name: 'AC Distribution discovery'
+          type: DEPENDENT
+          key: energy.AC.discovery
+          delay: '0'
+          description: 'Discovering AC Distribution'
+          item_prototypes:
+            - uuid: e996becee17d45d294ee69e547c0ee33
+              name: 'AC Distribution. Current Phase A'
+              type: DEPENDENT
+              key: 'energy.AC.A.c.[{#ACINDEX}]'
+              delay: '0'
+              value_type: FLOAT
+              units: A
+              preprocessing:
+                - type: SNMP_WALK_VALUE
+                  parameters:
+                    - '1.3.6.1.4.1.2011.6.164.1.5.2.1.1.7.{#ACINDEX}'
+                    - '0'
+                - type: MULTIPLIER
+                  parameters:
+                    - '0.1'
+              master_item:
+                key: energy.AC.walk
+              tags:
+                - tag: component
+                  value: AC
+                - tag: component
+                  value: energy
+            - uuid: 765261f9933a449cb0e3ae87e37d52dd
+              name: 'AC Distribution Status'
+              type: DEPENDENT
+              key: 'energy.AC.A.status.[{#ACINDEX}]'
+              delay: '0'
+              valuemap:
+                name: 'AC Distribution status'
+              preprocessing:
+                - type: SNMP_WALK_VALUE
+                  parameters:
+                    - '1.3.6.1.4.1.2011.6.164.1.5.2.1.1.99.{#ACINDEX}'
+                    - '0'
+              master_item:
+                key: energy.AC.walk
+              tags:
+                - tag: component
+                  value: AC
+                - tag: component
+                  value: energy
+            - uuid: 10dd6bd1f81a403da2c05a74d6577be4
+              name: 'AC Distribution. Voltage Phase A'
+              type: DEPENDENT
+              key: 'energy.AC.A.v.[{#ACINDEX}]'
+              delay: '0'
+              units: V
+              preprocessing:
+                - type: SNMP_WALK_VALUE
+                  parameters:
+                    - '1.3.6.1.4.1.2011.6.164.1.5.2.1.1.4.{#ACINDEX}'
+                    - '0'
+                - type: MULTIPLIER
+                  parameters:
+                    - '0.1'
+              master_item:
+                key: energy.AC.walk
+              tags:
+                - tag: component
+                  value: AC
+                - tag: component
+                  value: energy
+            - uuid: bb3bf7e06d2f44f6bb125566fed2f514
+              name: 'AC Distribution. Current Phase B'
+              type: DEPENDENT
+              key: 'energy.AC.B.c.[{#ACINDEX}]'
+              delay: '0'
+              value_type: FLOAT
+              units: A
+              preprocessing:
+                - type: SNMP_WALK_VALUE
+                  parameters:
+                    - '1.3.6.1.4.1.2011.6.164.1.5.2.1.1.8.{#ACINDEX}'
+                    - '0'
+                - type: MULTIPLIER
+                  parameters:
+                    - '0.1'
+              master_item:
+                key: energy.AC.walk
+              tags:
+                - tag: component
+                  value: AC
+                - tag: component
+                  value: energy
+            - uuid: af9805447ea24a20895840f4d82c4a41
+              name: 'AC Distribution. Voltage Phase B'
+              type: DEPENDENT
+              key: 'energy.AC.B.v.[{#ACINDEX}]'
+              delay: '0'
+              units: V
+              preprocessing:
+                - type: SNMP_WALK_VALUE
+                  parameters:
+                    - '1.3.6.1.4.1.2011.6.164.1.5.2.1.1.5.{#ACINDEX}'
+                    - '0'
+                - type: MULTIPLIER
+                  parameters:
+                    - '0.1'
+              master_item:
+                key: energy.AC.walk
+              tags:
+                - tag: component
+                  value: AC
+                - tag: component
+                  value: energy
+            - uuid: ad4b9f31845d402d8b9ccc62b6fd19fc
+              name: 'AC Distribution. Current Phase C'
+              type: DEPENDENT
+              key: 'energy.AC.C.c.[{#ACINDEX}]'
+              delay: '0'
+              value_type: FLOAT
+              units: A
+              preprocessing:
+                - type: SNMP_WALK_VALUE
+                  parameters:
+                    - '1.3.6.1.4.1.2011.6.164.1.5.2.1.1.9.{#ACINDEX}'
+                    - '0'
+                - type: MULTIPLIER
+                  parameters:
+                    - '0.1'
+              master_item:
+                key: energy.AC.walk
+              tags:
+                - tag: component
+                  value: AC
+                - tag: component
+                  value: energy
+            - uuid: 21035459ff0348a8922be3d4950055c9
+              name: 'AC Distribution. Voltage Phase C'
+              type: DEPENDENT
+              key: 'energy.AC.C.v.[{#ACINDEX}]'
+              delay: '0'
+              units: V
+              preprocessing:
+                - type: SNMP_WALK_VALUE
+                  parameters:
+                    - '1.3.6.1.4.1.2011.6.164.1.5.2.1.1.6.{#ACINDEX}'
+                    - '0'
+                - type: MULTIPLIER
+                  parameters:
+                    - '0.1'
+              master_item:
+                key: energy.AC.walk
+              tags:
+                - tag: component
+                  value: AC
+                - tag: component
+                  value: energy
+          master_item:
+            key: energy.AC.walk
+          preprocessing:
+            - type: SNMP_WALK_TO_JSON
+              parameters:
+                - '{#ACINDEX}'
+                - 1.3.6.1.4.1.2011.6.164.1.5.2.1.1.1
+                - '0'
+        - uuid: 29615e0dd22545fc8bc75fa2d42f2c20
+          name: 'Battery discovery'
+          type: DEPENDENT
+          key: energy.dc.battery.discovery
+          delay: '0'
+          description: 'Discovering Battery'
+          item_prototypes:
+            - uuid: 4df700f6013b4c12afc3d444a88158a0
+              name: 'DC Battery [{#BATNAME}] Current'
+              type: DEPENDENT
+              key: 'energy.dc.battery.current.[{#BATTERY}]'
+              delay: '0'
+              value_type: FLOAT
+              units: A
+              preprocessing:
+                - type: SNMP_WALK_VALUE
+                  parameters:
+                    - '1.3.6.1.4.1.2011.6.164.1.4.4.2.1.2.{#BATTERY}'
+                    - '0'
+                - type: MULTIPLIER
+                  parameters:
+                    - '0.1'
+              master_item:
+                key: energy.DC.battery.walk
+            - uuid: e1c750cc12b145648d7c067244881d95
+              name: 'DC Battery [{#BATNAME}] Midpoint voltage'
+              type: DEPENDENT
+              key: 'energy.dc.battery.mpoint.volt.[{#BATTERY}]'
+              delay: '0'
+              value_type: FLOAT
+              units: V
+              preprocessing:
+                - type: SNMP_WALK_VALUE
+                  parameters:
+                    - '1.3.6.1.4.1.2011.6.164.1.4.4.2.1.7.{#BATTERY}'
+                    - '0'
+                - type: MULTIPLIER
+                  parameters:
+                    - '0.1'
+              master_item:
+                key: energy.DC.battery.walk
+            - uuid: 1dd01c0d83c343729ea6343814f2a365
+              name: 'DC Battery [{#BATNAME}] Status'
+              type: DEPENDENT
+              key: 'energy.dc.battery.status.[{#BATTERY}]'
+              delay: '0'
+              valuemap:
+                name: 'Battery status'
+              preprocessing:
+                - type: SNMP_WALK_VALUE
+                  parameters:
+                    - '1.3.6.1.4.1.2011.6.164.1.4.4.2.1.99.{#BATTERY}'
+                    - '0'
+              master_item:
+                key: energy.DC.battery.walk
+          master_item:
+            key: energy.DC.battery.walk
+          preprocessing:
+            - type: SNMP_WALK_TO_JSON
+              parameters:
+                - '{#BATTERY}'
+                - 1.3.6.1.4.1.2011.6.164.1.4.4.2.1.1
+                - '0'
+                - '{#BATNAME}'
+                - 1.3.6.1.4.1.2011.6.164.1.4.4.1.1.3
+                - '0'
+        - uuid: 11642eae6e8646409ab2c35aa79ab48d
+          name: 'DC Rectifier discovery'
+          type: DEPENDENT
+          key: energy.DC.rect.discovery
+          delay: '0'
+          description: 'Discovering AC Distribution'
+          item_prototypes:
+            - uuid: c373fd316a43431085c0d2d395660143
+              name: 'DC Rectifier current [{#RINDEX}]'
+              type: DEPENDENT
+              key: 'energy.DC.rect.c.[{#RINDEX}]'
+              delay: '0'
+              value_type: FLOAT
+              units: A
+              preprocessing:
+                - type: SNMP_WALK_VALUE
+                  parameters:
+                    - '1.3.6.1.4.1.2011.6.164.1.3.2.2.1.2.{#RINDEX}'
+                    - '0'
+                - type: MULTIPLIER
+                  parameters:
+                    - '0.1'
+              master_item:
+                key: energy.DC.rect.walk
+              tags:
+                - tag: component
+                  value: DC
+                - tag: component
+                  value: energy
+            - uuid: a6a56061105d48f2b8fbb4f97f632aa2
+              name: 'DC Rectifier power [{#RINDEX}]'
+              type: DEPENDENT
+              key: 'energy.DC.rect.p.[{#RINDEX}]'
+              delay: '0'
+              units: W
+              preprocessing:
+                - type: SNMP_WALK_VALUE
+                  parameters:
+                    - '1.3.6.1.4.1.2011.6.164.1.3.2.2.1.5.{#RINDEX}'
+                    - '0'
+              master_item:
+                key: energy.DC.rect.walk
+              tags:
+                - tag: component
+                  value: DC
+                - tag: component
+                  value: energy
+            - uuid: 3756bf4cec194e06856f8b8db107f263
+              name: 'DC Rectifier temperature [{#RINDEX}]'
+              type: DEPENDENT
+              key: 'energy.DC.rect.t.[{#RINDEX}]'
+              delay: '0'
+              value_type: FLOAT
+              units: °C
+              preprocessing:
+                - type: SNMP_WALK_VALUE
+                  parameters:
+                    - '1.3.6.1.4.1.2011.6.164.1.3.2.2.1.8.{#RINDEX}'
+                    - '0'
+                - type: MULTIPLIER
+                  parameters:
+                    - '0.1'
+              master_item:
+                key: energy.DC.rect.walk
+              tags:
+                - tag: component
+                  value: environment
+          master_item:
+            key: energy.DC.rect.walk
+          preprocessing:
+            - type: SNMP_WALK_TO_JSON
+              parameters:
+                - '{#RINDEX}'
+                - 1.3.6.1.4.1.2011.6.164.1.3.2.1.1.1
+                - '0'
+        - uuid: c0b6aa9e31fa4855877c2980c468af7c
+          name: 'Humidity sensors discovery'
+          type: DEPENDENT
+          key: env.humi.discovery
+          delay: '0'
+          description: 'Discovering temperature sensors'
+          item_prototypes:
+            - uuid: c3a4c3029cd947999d826d34dac706a7
+              name: 'Humidity {#SENSORNAME}'
+              type: DEPENDENT
+              key: 'env.humi.[{#SNMPINDEX}]'
+              delay: '0'
+              units: '%'
+              preprocessing:
+                - type: SNMP_WALK_VALUE
+                  parameters:
+                    - '1.3.6.1.4.1.2011.6.164.1.8.2.2.1.4.{#SNMPINDEX}'
+                    - '0'
+              master_item:
+                key: env.humi.walk
+              tags:
+                - tag: component
+                  value: environment
+          master_item:
+            key: env.humi.walk
+          preprocessing:
+            - type: SNMP_WALK_TO_JSON
+              parameters:
+                - '{#SENSORNAME}'
+                - 1.3.6.1.4.1.2011.6.164.1.8.2.2.1.3
+                - '0'
+        - uuid: c34059d374434482b189c4999128870f
+          name: 'Temperature sensors discovery'
+          type: DEPENDENT
+          key: env.temp.discovery
+          delay: '0'
+          description: 'Discovering temperature sensors'
+          item_prototypes:
+            - uuid: 89e2f95e6c474dbaa2a654669f99c3b7
+              name: 'Temperature {#SENSORNAME}'
+              type: DEPENDENT
+              key: 'env.temp.[{#SNMPINDEX}]'
+              delay: '0'
+              value_type: FLOAT
+              units: °C
+              preprocessing:
+                - type: SNMP_WALK_VALUE
+                  parameters:
+                    - '1.3.6.1.4.1.2011.6.164.1.8.2.1.1.4.{#SNMPINDEX}'
+                    - '0'
+              master_item:
+                key: env.temp.walk
+              tags:
+                - tag: component
+                  value: environment
+          master_item:
+            key: env.temp.walk
+          preprocessing:
+            - type: SNMP_WALK_TO_JSON
+              parameters:
+                - '{#SENSORNAME}'
+                - 1.3.6.1.4.1.2011.6.164.1.8.2.1.1.3
+                - '0'
+      tags:
+        - tag: class
+          value: ups
+        - tag: target
+          value: huawei
+      macros:
+        - macro: '{$ICMP_LOSS_WARN}'
+          value: '34'
+          description: 'Warning threshold of ICMP packet loss in %.'
+        - macro: '{$ICMP_RESPONSE_TIME_WARN}'
+          value: '0.55'
+          description: 'Warning threshold of the average ICMP response time in seconds.'
+        - macro: '{$SNMP.TIMEOUT}'
+          value: 15m
+          description: 'Time interval for the SNMP availability trigger.'
+      valuemaps:
+        - uuid: aa9f528103a444cfa95ed92da6579fa1
+          name: 'AC Distribution status'
+          mappings:
+            - value: '1'
+              newvalue: normal
+            - value: '2'
+              newvalue: 'power off'
+            - value: '3'
+              newvalue: 'phase absent'
+            - value: '4'
+              newvalue: 'voltage is over upper alarm'
+            - value: '5'
+              newvalue: 'voltage is under lower alarm'
+            - value: '6'
+              newvalue: 'high frequency'
+            - value: '7'
+              newvalue: 'low frequency'
+        - uuid: d415bcbd778e4334b17f2ebf90a7fbda
+          name: 'Battery status'
+          mappings:
+            - value: '1'
+              newvalue: normal
+            - value: '2'
+              newvalue: 'hight temperature'
+            - value: '3'
+              newvalue: 'low temperature'
+            - value: '4'
+              newvalue: disconnected
+            - value: '5'
+              newvalue: 'over upper charging threshold'
+            - value: '6'
+              newvalue: 'battery is unbalance'
+            - value: '7'
+              newvalue: discharge
+            - value: '8'
+              newvalue: 'fuse break'
+        - uuid: 5f9784fa0e39431bb7e6f5a3bb6ed119
+          name: 'Charge status'
+          mappings:
+            - value: '1'
+              newvalue: 'float charging'
+            - value: '2'
+              newvalue: 'boost charging'
+            - value: '3'
+              newvalue: discharging
+            - value: '4'
+              newvalue: hibernating
+            - value: '7'
+              newvalue: Offline
+            - value: '255'
+              newvalue: Offline
