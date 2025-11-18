@@ -1,0 +1,381 @@
+zabbix_export:
+  version: '7.4'
+  template_groups:
+    - uuid: d435d7f64b55425ea7f91ed683c2f87d
+      name: Huawei
+    - uuid: 0e60ac85bc3941e2a1d66a048ff164da
+      name: UPS
+  templates:
+    - uuid: 26a8ac8c496d4bfe8f380d9ec78c1380
+      template: 'Huawei UPS2000H'
+      name: 'Huawei UPS2000H'
+      groups:
+        - name: Huawei
+        - name: UPS
+      items:
+        - uuid: 135586b880634c83a8d07840abcdd223
+          name: 'Number of active alarms'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.2011.6.174.1.12.2.0
+          key: huawei-ups.hwUpsAlarmCurrActiveNum
+          delay: 5m
+          description: 'Number of active alarms, ranging from 0 to 8000.'
+        - uuid: 9f3670bcd6b242d7b211d2f042341f7f
+          name: 'Number of devices in the system'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.2011.6.174.1.1.1.4.0
+          key: huawei-ups.hwUpsSysDeviceNum
+          delay: 4h
+          description: 'Number of devices in the system. An integer ranging from 0 to 63.'
+        - uuid: 4b82df12e0d545938698ba19d6ef7af7
+          name: 'ICMP ping'
+          type: SIMPLE
+          key: icmpping
+          tags:
+            - tag: component
+              value: health
+            - tag: component
+              value: network
+          triggers:
+            - uuid: 5916724a850c4125962789844127e44f
+              expression: 'max(/Huawei UPS2000H/icmpping,#3)=0'
+              name: 'Unavailable by ICMP ping'
+              priority: HIGH
+              description: 'Last three attempts returned timeout.  Please check device connectivity.'
+              tags:
+                - tag: scope
+                  value: availability
+        - uuid: 2d43ecb7cf734fbab766babe5b30dce5
+          name: 'ICMP loss'
+          type: SIMPLE
+          key: icmppingloss
+          value_type: FLOAT
+          units: '%'
+          tags:
+            - tag: component
+              value: health
+            - tag: component
+              value: network
+          triggers:
+            - uuid: c91f17de83284ccf9e57199660c85de8
+              expression: 'min(/Huawei UPS2000H/icmppingloss,5m)>{$ICMP_LOSS_WARN} and min(/Huawei UPS2000H/icmppingloss,5m)<100'
+              name: 'High ICMP ping loss'
+              opdata: 'Loss: {ITEM.LASTVALUE1}'
+              priority: WARNING
+              dependencies:
+                - name: 'Unavailable by ICMP ping'
+                  expression: 'max(/Huawei UPS2000H/icmpping,#3)=0'
+              tags:
+                - tag: scope
+                  value: availability
+                - tag: scope
+                  value: performance
+        - uuid: 078ba64d4946484ab07ba9c3cb7b436f
+          name: 'ICMP response time'
+          type: SIMPLE
+          key: icmppingsec
+          value_type: FLOAT
+          units: s
+          tags:
+            - tag: component
+              value: health
+            - tag: component
+              value: network
+          triggers:
+            - uuid: aaf57237c785464c9913674fb2bf0dee
+              expression: 'avg(/Huawei UPS2000H/icmppingsec,5m)>{$ICMP_RESPONSE_TIME_WARN}'
+              name: 'High ICMP ping response time'
+              opdata: 'Value: {ITEM.LASTVALUE1}'
+              priority: WARNING
+              description: 'Average ICMP response time is too high.'
+              dependencies:
+                - name: 'High ICMP ping loss'
+                  expression: 'min(/Huawei UPS2000H/icmppingloss,5m)>{$ICMP_LOSS_WARN} and min(/Huawei UPS2000H/icmppingloss,5m)<100'
+                - name: 'Unavailable by ICMP ping'
+                  expression: 'max(/Huawei UPS2000H/icmpping,#3)=0'
+              tags:
+                - tag: scope
+                  value: availability
+                - tag: scope
+                  value: performance
+        - uuid: 0f2ff8a4eca34ad9bde1bb894fafa42e
+          name: 'Uptime (network)'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.2.1.1.3.0
+          key: 'system.net.uptime[sysUpTime.0]'
+          delay: 30m
+          trends: '0'
+          units: uptime
+          description: |
+            MIB: SNMPv2-MIB
+            Time (in hundredths of a second) since the network management portion of the system was last re-initialized.
+          preprocessing:
+            - type: MULTIPLIER
+              parameters:
+                - '0.01'
+          tags:
+            - tag: component
+              value: system
+        - uuid: f233dbb9f66b4ebfb8585c0bf8621eb1
+          name: 'Total Avg load rate'
+          type: CALCULATED
+          key: TotalAvgLoadRate
+          delay: 5m
+          units: '%'
+          params: 'avg(last_foreach(//huawei-ups-hwUpsLoadRate[*]))'
+        - uuid: 3d3ec90772bd41c496c16d9a4b67913f
+          name: 'Total input current'
+          type: CALCULATED
+          key: TotalInputCurrent
+          delay: 5m
+          units: A
+          params: 'sum(last_foreach(//huawei-ups-hwUpsInCurr[*]))'
+        - uuid: 07ce142c1f5f4add9493316b1302c94d
+          name: 'Total output current'
+          type: CALCULATED
+          key: TotalOutputCurrent
+          delay: 5m
+          units: A
+          params: 'sum(last_foreach(//huawei-ups-hwUpsOutCurr[*]))'
+        - uuid: 6a869ea42f574c62b8560fc5d474b664
+          name: 'Total output power'
+          type: CALCULATED
+          key: TotalOutputPower
+          delay: 5m
+          units: W
+          params: 'sum(last_foreach(//huawei-ups-hwUpsOutFpow[*]))'
+        - uuid: 3654b733d7014d8ca0acdfc415c3f5f1
+          name: 'SNMP agent availability'
+          type: INTERNAL
+          key: 'zabbix[host,snmp,available]'
+          delay: 5m
+          description: |
+            Availability of SNMP checks on the host. The value of this item corresponds to availability icons in the host list.
+            Possible values:
+            0 - not available
+            1 - available
+            2 - unknown
+          tags:
+            - tag: component
+              value: health
+            - tag: component
+              value: network
+          triggers:
+            - uuid: 37c8396010ef46ce86e97aa87505df1b
+              expression: 'max(/Huawei UPS2000H/zabbix[host,snmp,available],{$SNMP.TIMEOUT})=0'
+              name: 'No SNMP data collection'
+              opdata: 'Current state: {ITEM.LASTVALUE1}'
+              priority: WARNING
+              description: 'SNMP is not available for polling. Please check device connectivity and SNMP settings.'
+              dependencies:
+                - name: 'Unavailable by ICMP ping'
+                  expression: 'max(/Huawei UPS2000H/icmpping,#3)=0'
+              tags:
+                - tag: scope
+                  value: availability
+      discovery_rules:
+        - uuid: 22d45247752d41d5a4b5027b54534512
+          name: Device
+          type: SNMP_AGENT
+          snmp_oid: 'discovery[{#HWUPSDEVICEID},1.3.6.1.4.1.2011.6.174.1.2.100.1.1, {#HWUPSDEVICETYPE}, 1.3.6.1.4.1.2011.6.174.1.2.100.1.2]'
+          key: huawei-ups.hwUpsDeviceId
+          delay: 5m
+          description: 'Rack ID, ranging from 1 to 100. This node is referenced as an index node by hwUpsDeviceIdentTable, hwUpsDeviceOperInfoTable, hwUpsInputTable, and hwUpsBattScheduleTestTable.'
+          item_prototypes:
+            - uuid: a72e523307b04a1e8915a4a36bc4761d
+              name: '{#HWUPSDEVICETYPE}-{#HWUPSDEVICEID} Battery charge percentage'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.2011.6.174.1.6.100.1.3.{#HWUPSDEVICEID}'
+              key: 'huawei-ups-hwUpsBattCharPrec[{#HWUPSDEVICEID}]'
+              delay: 5m
+              units: '%'
+              trigger_prototypes:
+                - uuid: 035d8b98a4cc4a64af5a27a5b45c97f1
+                  expression: 'last(/Huawei UPS2000H/huawei-ups-hwUpsBattCharPrec[{#HWUPSDEVICEID}],#1)<{$LOW_BATTERY}'
+                  name: 'Low battery {#HWUPSDEVICETYPE}-{#HWUPSDEVICEID}: {ITEM.LASTVALUE1}'
+                  opdata: 'Load rate: {ITEM.LASTVALUE1}'
+                  priority: AVERAGE
+                  description: 'Battery charge less than {$LOW_BATTERY}'
+            - uuid: a2be4d0966bc4900959d91af1033eafa
+              name: '{#HWUPSDEVICETYPE}-{#HWUPSDEVICEID} Battery discharge time'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.2011.6.174.1.6.100.1.4.{#HWUPSDEVICEID}'
+              key: 'huawei-ups-hwUpsBattDischTime[{#HWUPSDEVICEID}]'
+              delay: 5m
+              units: s
+            - uuid: a918bdec5ec2477389d9ba8608e16ba3
+              name: '{#HWUPSDEVICETYPE}-{#HWUPSDEVICEID} Battery voltage'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.2011.6.174.1.6.100.1.1.{#HWUPSDEVICEID}'
+              key: 'huawei-ups-hwUpsBattVolt[{#HWUPSDEVICEID}]'
+              delay: 5m
+              units: V
+              preprocessing:
+                - type: MULTIPLIER
+                  parameters:
+                    - '0.1'
+            - uuid: 767a530aea6e4d5793f2c5287509b1ac
+              name: '{#HWUPSDEVICETYPE}-{#HWUPSDEVICEID} Input current'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.2011.6.174.1.3.100.1.5.{#HWUPSDEVICEID}'
+              key: 'huawei-ups-hwUpsInCurr[{#HWUPSDEVICEID}]'
+              delay: 5m
+              value_type: FLOAT
+              units: A
+              preprocessing:
+                - type: MULTIPLIER
+                  parameters:
+                    - '0.1'
+            - uuid: 9836106e057d4957981902e4769bcd67
+              name: '{#HWUPSDEVICETYPE}-{#HWUPSDEVICEID} Input frequency'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.2011.6.174.1.3.100.1.4.{#HWUPSDEVICEID}'
+              key: 'huawei-ups-hwUpsInFr[{#HWUPSDEVICEID}]'
+              delay: 5m
+              value_type: FLOAT
+              units: Hz
+              preprocessing:
+                - type: MULTIPLIER
+                  parameters:
+                    - '0.01'
+            - uuid: d907e5b0428648d0ae6d14bbfb2b4750
+              name: '{#HWUPSDEVICETYPE}-{#HWUPSDEVICEID} Internal temperature'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.2011.6.174.1.2.101.1.4.{#HWUPSDEVICEID}'
+              key: 'huawei-ups-hwUpsIntTemper[{#HWUPSDEVICEID}]'
+              delay: 5m
+              units: ℃
+              preprocessing:
+                - type: MULTIPLIER
+                  parameters:
+                    - '0.1'
+              trigger_prototypes:
+                - uuid: f1d11ffe8c1645e48338c435d5da8b1a
+                  expression: 'last(/Huawei UPS2000H/huawei-ups-hwUpsIntTemper[{#HWUPSDEVICEID}],#1)>{$HIGH_TEMP}'
+                  name: 'High temperature {#HWUPSDEVICETYPE}-{#HWUPSDEVICEID}: {ITEM.LASTVALUE1}'
+                  opdata: 'Temperature: {ITEM.LASTVALUE1}'
+                  priority: AVERAGE
+                  description: 'High temperature inside the inverter'
+            - uuid: 1704c2334a7149678860be56439b1edc
+              name: '{#HWUPSDEVICETYPE}-{#HWUPSDEVICEID} Input voltage'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.2011.6.174.1.3.100.1.1.{#HWUPSDEVICEID}'
+              key: 'huawei-ups-hwUpsInVolt[{#HWUPSDEVICEID}]'
+              delay: 5m
+              value_type: FLOAT
+              units: V
+              preprocessing:
+                - type: MULTIPLIER
+                  parameters:
+                    - '0.1'
+              trigger_prototypes:
+                - uuid: 1e01fe146a3d43e19a6c262079b92408
+                  expression: 'last(/Huawei UPS2000H/huawei-ups-hwUpsInVolt[{#HWUPSDEVICEID}],#1)<{$LOST_VOLTAGE}'
+                  name: 'Lost voltage {#HWUPSDEVICETYPE}-{#HWUPSDEVICEID}'
+                  opdata: 'AC: {ITEM.LASTVALUE1}'
+                  priority: AVERAGE
+                  description: 'There is no voltage at the UPS input'
+                - uuid: 319d7377638046d6b6211d173c43c7cd
+                  expression: 'last(/Huawei UPS2000H/huawei-ups-hwUpsInVolt[{#HWUPSDEVICEID}],#1)<{$LOW_VOLTAGE}'
+                  name: 'Low voltage {#HWUPSDEVICETYPE}-{#HWUPSDEVICEID}'
+                  opdata: 'AC: {ITEM.LASTVALUE1}'
+                  priority: AVERAGE
+                  description: 'The UPS input voltage is less than {$LOW_VOLTAGE} volts'
+                  dependencies:
+                    - name: 'Lost voltage {#HWUPSDEVICETYPE}-{#HWUPSDEVICEID}'
+                      expression: 'last(/Huawei UPS2000H/huawei-ups-hwUpsInVolt[{#HWUPSDEVICEID}],#1)<{$LOST_VOLTAGE}'
+            - uuid: e79aca076e56454ab9e6024f00145eb6
+              name: '{#HWUPSDEVICETYPE}-{#HWUPSDEVICEID} Load rate'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.2011.6.174.1.4.100.1.14.{#HWUPSDEVICEID}'
+              key: 'huawei-ups-hwUpsLoadRate[{#HWUPSDEVICEID}]'
+              delay: 5m
+              value_type: FLOAT
+              units: '%'
+              preprocessing:
+                - type: MULTIPLIER
+                  parameters:
+                    - '0.1'
+              trigger_prototypes:
+                - uuid: 3f95f96c39084d1e9d24af8f9db62225
+                  expression: 'last(/Huawei UPS2000H/huawei-ups-hwUpsLoadRate[{#HWUPSDEVICEID}],#1)>{$HIGH_LOAD}'
+                  name: 'High load {#HWUPSDEVICETYPE}-{#HWUPSDEVICEID}: {ITEM.LASTVALUE1}'
+                  opdata: 'Load rate: {ITEM.LASTVALUE1}'
+                  priority: AVERAGE
+                  description: 'UPS load is more than {$HIGH_LOAD}'
+            - uuid: 29cd352a3d2e4689b8c7d96b4466020f
+              name: '{#HWUPSDEVICETYPE}-{#HWUPSDEVICEID} Output active power'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.2011.6.174.1.4.100.1.8.{#HWUPSDEVICEID}'
+              key: 'huawei-ups-hwUpsOutApow[{#HWUPSDEVICEID}]'
+              delay: 5m
+              units: W
+              preprocessing:
+                - type: MULTIPLIER
+                  parameters:
+                    - '100'
+            - uuid: 40e727e8c0be44d9b0494c90564734fc
+              name: '{#HWUPSDEVICETYPE}-{#HWUPSDEVICEID} Output current'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.2011.6.174.1.4.100.1.4.{#HWUPSDEVICEID}'
+              key: 'huawei-ups-hwUpsOutCurr[{#HWUPSDEVICEID}]'
+              delay: 5m
+              value_type: FLOAT
+              units: A
+              preprocessing:
+                - type: MULTIPLIER
+                  parameters:
+                    - '0.1'
+            - uuid: dafed4b06b61491f85c49edc53bdf4b8
+              name: '{#HWUPSDEVICETYPE}-{#HWUPSDEVICEID} Output full power'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.2011.6.174.1.4.100.1.11.{#HWUPSDEVICEID}'
+              key: 'huawei-ups-hwUpsOutFpow[{#HWUPSDEVICEID}]'
+              delay: 5m
+              units: W
+              preprocessing:
+                - type: MULTIPLIER
+                  parameters:
+                    - '100'
+            - uuid: f4aa291c11514d3d8bcc6c2a113c7a67
+              name: '{#HWUPSDEVICETYPE}-{#HWUPSDEVICEID} Output voltage'
+              type: SNMP_AGENT
+              snmp_oid: '1.3.6.1.4.1.2011.6.174.1.4.100.1.1.{#HWUPSDEVICEID}'
+              key: 'huawei-ups-hwUpsOutVolt[{#HWUPSDEVICEID}]'
+              delay: 5m
+              value_type: FLOAT
+              units: V
+              preprocessing:
+                - type: MULTIPLIER
+                  parameters:
+                    - '0.1'
+      tags:
+        - tag: class
+          value: UPS
+        - tag: target
+          value: huawei
+      macros:
+        - macro: '{$HIGH_LOAD}'
+          value: '85'
+          description: 'High UPS load'
+        - macro: '{$HIGH_TEMP}'
+          value: '28'
+          description: 'High temperature inside the inverter'
+        - macro: '{$ICMP_LOSS_WARN}'
+          value: '34'
+          description: 'Warning threshold of ICMP packet loss in %.'
+        - macro: '{$ICMP_RESPONSE_TIME_WARN}'
+          value: '0.55'
+          description: 'Warning threshold of the average ICMP response time in seconds.'
+        - macro: '{$LOST_VOLTAGE}'
+          value: '180'
+          description: 'Lost voltage'
+        - macro: '{$LOW_BATTERY}'
+          value: '40'
+          description: 'Low battery'
+        - macro: '{$LOW_VOLTAGE}'
+          value: '200'
+          description: 'Low voltage'
+        - macro: '{$SNMP.TIMEOUT}'
+          value: 15m
+          description: 'Time interval for the SNMP availability trigger.'
