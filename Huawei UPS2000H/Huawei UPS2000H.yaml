@@ -13,6 +13,20 @@ zabbix_export:
         - name: Huawei
         - name: UPS
       items:
+        - uuid: 499d56f1ba3f481bac457bfa3db467d1
+          name: 'Avg battery discharge time'
+          type: CALCULATED
+          key: AvgBattDischTime
+          delay: 5m
+          units: s
+          params: 'avg(last_foreach(//huawei-ups-hwUpsBattDischTime[*]))'
+        - uuid: f233dbb9f66b4ebfb8585c0bf8621eb1
+          name: 'Avg load rate'
+          type: CALCULATED
+          key: AvgLoadRate
+          delay: 5m
+          units: '%'
+          params: 'avg(last_foreach(//huawei-ups-hwUpsLoadRate[*]))'
         - uuid: 135586b880634c83a8d07840abcdd223
           name: 'Number of active alarms'
           type: SNMP_AGENT
@@ -116,13 +130,6 @@ zabbix_export:
           tags:
             - tag: component
               value: system
-        - uuid: f233dbb9f66b4ebfb8585c0bf8621eb1
-          name: 'Total Avg load rate'
-          type: CALCULATED
-          key: TotalAvgLoadRate
-          delay: 5m
-          units: '%'
-          params: 'avg(last_foreach(//huawei-ups-hwUpsLoadRate[*]))'
         - uuid: 3d3ec90772bd41c496c16d9a4b67913f
           name: 'Total input current'
           type: CALCULATED
